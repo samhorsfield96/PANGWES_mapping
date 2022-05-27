@@ -50,14 +50,27 @@ def map_pairs(infile, outfile):
         o.write("Unitig_Pair_ID\tUnitig_No\tUnitig_Seq\tReference_Sample_Accession\tReference_COG_ID\tAlignment_start\tAlignment_end\tPerc_Identity\n")
         for index, pair in enumerate(unitig_pairs):
             mappings1, mappings2 = mapping_results[index]
-            for mapping in mappings1:
-                o.write(str(index) + "\t" + "1" + "\t" + pair[0] + "\t" + str(mapping[0]) + "\t" + str(mapping[1]) + "\t" + str(mapping[2]) + "\t" + str(mapping[3]) + "\t" + str(mapping[5]) + "\n")
-            if not mappings1:
-                o.write(str(index) + "\t" + "1" + "\t" + pair[0] + "\t" + "NA" + "\t" + "NA" + "\t" + "NA" + "\t" + "NA" + "\t" + "NA" + "\n")
-            for mapping in mappings2:
-                o.write(str(index) + "\t" + "2" + "\t" + pair[1] + "\t" + str(mapping[0]) + "\t" + str(mapping[1]) + "\t" + str(mapping[2]) + "\t" + str(mapping[3]) + "\t" + str(mapping[5]) + "\n")
-            if not mappings2:
-                o.write(str(index) + "\t" + "2" + "\t" + pair[1] + "\t" + "NA" + "\t" + "NA" + "\t" + "NA" + "\t" + "NA" + "\t" + "NA" + "\n")
+            mappings1 = sorted(mappings1, key=lambda i: i[-1], reverse=True)
+            mappings2 = sorted(mappings1, key=lambda i: i[-1], reverse=True)
+
+            # take top hit from each mappings
+            map = [str(index), pair[0], "NA", "NA", "NA", "NA", "NA", pair[1], "NA", "NA", "NA", "NA", "NA"]
+            if mappings1:
+                mappings = mappings1[0]
+                map[2] = mappings[1]
+                map[4] = mappings[2]
+                map[5] = mappings[3]
+                map[6] = mappings[5]
+            if mappings2:
+                mappings = mappings2[0]
+                map[8] = mappings[1]
+                map[10] = mappings[2]
+                map[11] = mappings[3]
+                map[12] = mappings[5]
+
+            for entry in map:
+                o.write(str(entry))
+            o.write("\n")
 
 if __name__ == "__main__":
     map_pairs("unitigs/maela_k101.txt", "maela_k101_mapped.txt")
