@@ -58,7 +58,7 @@ def map_pairs(infile, outfile, *annotation_files):
         for index, pair in enumerate(unitig_pairs):
             mappings1, mappings2 = mapping_results[index]
             mappings1 = sorted(mappings1, key=lambda i: i[-1], reverse=True)
-            mappings2 = sorted(mappings1, key=lambda i: i[-1], reverse=True)
+            mappings2 = sorted(mappings2, key=lambda i: i[-1], reverse=True)
 
             # take top hit from each mappings
             map = [str(index), pair[0], "NA", "NA", "NA", "NA", "NA", "NA", "BLAST", pair[1], "NA", "NA", "NA", "NA", "NA", "NA", "BLAST"]
@@ -100,4 +100,4 @@ def map_pairs(infile, outfile, *annotation_files):
             o.write("\n")
 
 if __name__ == "__main__":
-    map_pairs("unitigs/pneumo_ZA_k151.txt", "pneumo_ZA_k151_mapped.txt", "functional_annotation/NIHMS74007-supplement-Supplementary_Dataset_1.xls", "functional_annotation/NIHMS74007-supplement-Supplementary_Dataset_2.xls")
+    map_pairs("unitigs/maela_k151.txt", "maela_k151_mapped.txt", "functional_annotation/NIHMS74007-supplement-Supplementary_Dataset_1.xls", "functional_annotation/NIHMS74007-supplement-Supplementary_Dataset_2.xls")
