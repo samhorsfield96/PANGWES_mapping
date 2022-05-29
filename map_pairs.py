@@ -100,4 +100,4 @@ def map_pairs(infile, outfile, *annotation_files):
             o.write("\n")
 
 if __name__ == "__main__":
-    map_pairs("unitigs/maela_k101.txt", "maela_k101_mapped.txt", "functional_annotation/NIHMS74007-supplement-Supplementary_Dataset_1.xls", "functional_annotation/NIHMS74007-supplement-Supplementary_Dataset_2.xls")
+    map_pairs("unitigs/pneumo_ZA_k151.txt", "pneumo_ZA_k151_mapped.txt", "functional_annotation/NIHMS74007-supplement-Supplementary_Dataset_1.xls", "functional_annotation/NIHMS74007-supplement-Supplementary_Dataset_2.xls")
