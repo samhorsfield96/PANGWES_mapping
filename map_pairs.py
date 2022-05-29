@@ -1,7 +1,14 @@
 import mappy as mp
 import re
+import pandas
 
-def map_pairs(infile, outfile):
+def map_pairs(infile, outfile, *annotation_files):
+    annotation_dict = {}
+    for file in annotation_files:
+        df = pandas.read_excel(file)
+        for index, row in df.iterrows():
+            annotation_dict[row[0]] = (row[2], row[3])
+
     a = mp.Aligner("SPARC_CDS_dna_sequences.mmi", preset="sr")
 
     unitig_pairs = []
@@ -21,7 +28,7 @@ def map_pairs(infile, outfile):
             hit_ref = hit.ctg
             hit_ref = hit_ref.split("_")
             sample_accession = hit_ref[0] + "_" + hit_ref[1]
-            COG_accession = hit_ref[2] + "_" + hit_ref[3]
+            COG_accession = hit_ref[3]
             cigar = hit.cigar_str
             matches = re.findall(r'(\d+)([A-Z]{1})', cigar)
             num_matches = 0
@@ -35,7 +42,7 @@ def map_pairs(infile, outfile):
             hit_ref = hit.ctg
             hit_ref = hit_ref.split("_")
             sample_accession = hit_ref[0] + "_" + hit_ref[1]
-            COG_accession = hit_ref[2] + "_" + hit_ref[3]
+            COG_accession = hit_ref[3]
             cigar = hit.cigar_str
             matches = re.findall(r'(\d+)([A-Z]{1})', cigar)
             num_matches = 0
@@ -47,30 +54,50 @@ def map_pairs(infile, outfile):
         mapping_results[index] = (mappings1, mappings2)
 
     with open(outfile, "w") as o:
-        o.write("Unitig_Pair_ID\tUnitig_No\tUnitig_Seq\tReference_Sample_Accession\tReference_COG_ID\tAlignment_start\tAlignment_end\tPerc_Identity\n")
+        o.write("Unitig_Pair_ID\tUnitig_seq1\tCOG_accession1\tGene_name1\tAnnotation1\tHit_start1\tHit_end1\tPerc_id1\tSource1\tUnitig_seq2\tCOG_accession2\tGene_name2\tAnnotation2\tHit_start2\tHit_end2\tPerc_id2\tSource2\n")
         for index, pair in enumerate(unitig_pairs):
             mappings1, mappings2 = mapping_results[index]
             mappings1 = sorted(mappings1, key=lambda i: i[-1], reverse=True)
             mappings2 = sorted(mappings1, key=lambda i: i[-1], reverse=True)
 
             # take top hit from each mappings
-            map = [str(index), pair[0], "NA", "NA", "NA", "NA", "NA", pair[1], "NA", "NA", "NA", "NA", "NA"]
+            map = [str(index), pair[0], "NA", "NA", "NA", "NA", "NA", "NA", "BLAST", pair[1], "NA", "NA", "NA", "NA", "NA", "NA", "BLAST"]
             if mappings1:
                 mappings = mappings1[0]
-                map[2] = mappings[1]
-                map[4] = mappings[2]
-                map[5] = mappings[3]
-                map[6] = mappings[5]
+                gene_name = "NA"
+                annotation = "NA"
+                COG_accession = mappings[1]
+                if COG_accession in annotation_dict:
+                    gene_name, annotation = annotation_dict[COG_accession]
+
+                map[2] = COG_accession
+                map[3] = gene_name
+                map[4] = annotation
+                map[5] = mappings[2]
+                map[6] = mappings[3]
+                map[7] = mappings[5]
+                map[8] = "SPARC"
             if mappings2:
                 mappings = mappings2[0]
-                map[8] = mappings[1]
-                map[10] = mappings[2]
-                map[11] = mappings[3]
-                map[12] = mappings[5]
+                gene_name = "NA"
+                annotation = "NA"
+                COG_accession = mappings[1]
+                if COG_accession in annotation_dict:
+                    gene_name, annotation = annotation_dict[COG_accession]
 
-            for entry in map:
+                map[10] = COG_accession
+                map[11] = gene_name
+                map[12] = annotation
+                map[13] = mappings[2]
+                map[14] = mappings[3]
+                map[15] = mappings[5]
+                map[16] = "SPARC"
+
+            for index, entry in enumerate(map):
                 o.write(str(entry))
+                if index < len(map) - 1:
+                    o.write("\t")
             o.write("\n")
 
 if __name__ == "__main__":
-    map_pairs("unitigs/maela_k101.txt", "maela_k101_mapped.txt")
+    map_pairs("unitigs/maela_k101.txt", "maela_k101_mapped.txt", "functional_annotation/NIHMS74007-supplement-Supplementary_Dataset_1.xls", "functional_annotation/NIHMS74007-supplement-Supplementary_Dataset_2.xls")
