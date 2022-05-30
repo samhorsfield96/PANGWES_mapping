@@ -7,7 +7,17 @@ def map_pairs(infile, outfile, *annotation_files):
     for file in annotation_files:
         df = pandas.read_excel(file)
         for index, row in df.iterrows():
-            annotation_dict[row[0]] = (row[2], row[3])
+            if row[0] not in annotation_dict:
+                annotation_dict[row[0]] = (row[2], row[3])
+            else:
+                curr_gene_name, curr_annotation = annotation_dict[row[0]]
+                if pandas.isnull(curr_gene_name) and not pandas.isnull(row[2]):
+                    curr_gene_name = row[2]
+                if pandas.isnull(curr_annotation) and not pandas.isnull(row[3]):
+                    curr_annotation = row[3]
+                elif not pandas.isnull(curr_annotation) and not pandas.isnull(row[3]):
+                    curr_annotation += "; " + row[3]
+                annotation_dict[row[0]] = (curr_gene_name, curr_annotation)
 
     a = mp.Aligner("SPARC_CDS_dna_sequences.mmi", preset="sr")
 
@@ -61,11 +71,11 @@ def map_pairs(infile, outfile, *annotation_files):
             mappings2 = sorted(mappings2, key=lambda i: i[-1], reverse=True)
 
             # take top hit from each mappings
-            map = [str(index), pair[0], "NA", "NA", "NA", "NA", "NA", "NA", "BLAST", pair[1], "NA", "NA", "NA", "NA", "NA", "NA", "BLAST"]
+            map = [str(index), pair[0], "nan", "nan", "nan", "nan", "nan", "nan", "BLAST", pair[1], "nan", "nan", "nan", "nan", "nan", "nan", "BLAST"]
             if mappings1:
                 mappings = mappings1[0]
-                gene_name = "NA"
-                annotation = "NA"
+                gene_name = "nan"
+                annotation = "nan"
                 COG_accession = mappings[1]
                 if COG_accession in annotation_dict:
                     gene_name, annotation = annotation_dict[COG_accession]
@@ -79,8 +89,8 @@ def map_pairs(infile, outfile, *annotation_files):
                 map[8] = "SPARC"
             if mappings2:
                 mappings = mappings2[0]
-                gene_name = "NA"
-                annotation = "NA"
+                gene_name = "nan"
+                annotation = "nan"
                 COG_accession = mappings[1]
                 if COG_accession in annotation_dict:
                     gene_name, annotation = annotation_dict[COG_accession]
@@ -111,7 +121,10 @@ def parse_annotations(infile, outfile):
         non_zero = [index for index, entry in enumerate(annotation_list) if entry]
         annotation = ""
         for index in non_zero:
-            annotation += columnsNamesList[index]
+            if annotation == "":
+                annotation = columnsNamesList[index]
+            else:
+                annotation += "; " + columnsNamesList[index]
         d[CDS_name] = [gene_name, annotation]
 
 
@@ -127,4 +140,15 @@ def parse_annotations(infile, outfile):
 
 if __name__ == "__main__":
     #parse_annotations("functional_annotation/pnas.1613937114.sd01.xlsx", "functional_annotation/pnas.1613937114.sd01.parsed.xlsx")
-    map_pairs("unitigs/maela_k151.txt", "maela_k151_mapped.txt", "functional_annotation/NIHMS74007-supplement-Supplementary_Dataset_1.xls", "functional_annotation/NIHMS74007-supplement-Supplementary_Dataset_2.xls")
+    map_pairs("unitigs/maela_k101.txt", "maela_k101_mapped.txt", "functional_annotation/NIHMS74007-supplement-Supplementary_Dataset_1.xls",
+              "functional_annotation/NIHMS74007-supplement-Supplementary_Dataset_2.xls",
+              "functional_annotation/pnas.1613937114.sd01.parsed.xlsx")
+    map_pairs("unitigs/maela_k151.txt", "maela_k151_mapped.txt", "functional_annotation/NIHMS74007-supplement-Supplementary_Dataset_1.xls",
+              "functional_annotation/NIHMS74007-supplement-Supplementary_Dataset_2.xls",
+              "functional_annotation/pnas.1613937114.sd01.parsed.xlsx")
+    map_pairs("unitigs/pneumo_ZA_k101.txt", "pneumo_ZA_k101_mapped.txt", "functional_annotation/NIHMS74007-supplement-Supplementary_Dataset_1.xls",
+              "functional_annotation/NIHMS74007-supplement-Supplementary_Dataset_2.xls",
+              "functional_annotation/pnas.1613937114.sd01.parsed.xlsx")
+    map_pairs("unitigs/pneumo_ZA_k151.txt", "pneumo_ZA_k151_mapped.txt", "functional_annotation/NIHMS74007-supplement-Supplementary_Dataset_1.xls",
+              "functional_annotation/NIHMS74007-supplement-Supplementary_Dataset_2.xls",
+              "functional_annotation/pnas.1613937114.sd01.parsed.xlsx")
