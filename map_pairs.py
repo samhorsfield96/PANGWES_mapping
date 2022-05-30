@@ -39,13 +39,7 @@ def map_pairs(infile, outfile, *annotation_files):
             hit_ref = hit_ref.split("_")
             sample_accession = hit_ref[0] + "_" + hit_ref[1]
             COG_accession = hit_ref[3]
-            cigar = hit.cigar_str
-            matches = re.findall(r'(\d+)([A-Z]{1})', cigar)
-            num_matches = 0
-            for m in matches:
-                if m[1] == 'M':
-                    num_matches += int(m[0])
-            prop_matches = num_matches / len(unitig1)
+            prop_matches = hit.mlen / len(unitig1)
             mappings1.append((sample_accession, COG_accession, hit.r_st, hit.r_en, hit.cigar_str, prop_matches))
         mappings2 = []
         for hit in a.map(unitig2):
@@ -53,13 +47,7 @@ def map_pairs(infile, outfile, *annotation_files):
             hit_ref = hit_ref.split("_")
             sample_accession = hit_ref[0] + "_" + hit_ref[1]
             COG_accession = hit_ref[3]
-            cigar = hit.cigar_str
-            matches = re.findall(r'(\d+)([A-Z]{1})', cigar)
-            num_matches = 0
-            for m in matches:
-                if m[1] == 'M':
-                    num_matches += int(m[0])
-            prop_matches = num_matches / len(unitig2)
+            prop_matches = hit.mlen / len(unitig2)
             mappings2.append((sample_accession, COG_accession, hit.r_st, hit.r_en, hit.cigar_str, prop_matches))
         mapping_results[index] = (mappings1, mappings2)
 
