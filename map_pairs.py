@@ -99,5 +99,32 @@ def map_pairs(infile, outfile, *annotation_files):
                     o.write("\t")
             o.write("\n")
 
+def parse_annotations(infile, outfile):
+    in_df = pandas.read_excel(infile)
+    d = {}
+    columnsNamesList = list(in_df.columns.values)
+    columnsNamesList = columnsNamesList[2:]
+    for index, row in in_df.iterrows():
+        CDS_name = row[0]
+        gene_name = row[1]
+        annotation_list = row[2:]
+        non_zero = [index for index, entry in enumerate(annotation_list) if entry]
+        annotation = ""
+        for index in non_zero:
+            annotation += columnsNamesList[index]
+        d[CDS_name] = [gene_name, annotation]
+
+
+
+    df = pandas.DataFrame(data=d)
+    df = df.transpose()
+    df.columns = ["Gene_name", "Annotation"]
+
+    df = df.replace(to_replace="-",
+               value="")
+    df.to_excel(outfile)
+
+
 if __name__ == "__main__":
+    #parse_annotations("functional_annotation/pnas.1613937114.sd01.xlsx", "functional_annotation/pnas.1613937114.sd01.parsed.xlsx")
     map_pairs("unitigs/maela_k151.txt", "maela_k151_mapped.txt", "functional_annotation/NIHMS74007-supplement-Supplementary_Dataset_1.xls", "functional_annotation/NIHMS74007-supplement-Supplementary_Dataset_2.xls")
